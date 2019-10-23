@@ -104,10 +104,88 @@ class G(nn.Module):
         d2_c = self.dec2_nl(torch.cat((d2, e1), dim = 1))
         d1 = self.dec1(d2_c)
         out = self.dec_tanh(d1)
-        pdb.set_trace()
 
         return out
 
+class D(nn.Module):
+    """D"""
+
+    def __init__(self):
+        super().__init__()
+        self.block1 = nn.Sequential(
+        nn.Conv2d(in_channels = 1, out_channels = 16, kernel_size = 4, stride = 1, padding = 0),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm2d(16))
+        self.block2 = nn.Sequential(
+        nn.Conv2d(16, 32, 4, 1, 0),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm2d(32))
+        self.block3 = nn.Sequential(
+        nn.Conv2d(32, 32, 4, 1, 0),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm2d(32))
+        self.block4 = nn.Sequential(
+        nn.Conv2d(32, 64, 4, 1, 0),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm2d(64))
+        self.block5 = nn.Sequential(
+        nn.Conv2d(64, 64, 4, 1, 0),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm2d(64))
+        self.block6 = nn.Sequential(
+        nn.Conv2d(64, 128, 4, 1, 0),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm2d(128))
+        self.block7 = nn.Sequential(
+        nn.Conv2d(128, 128, 4, 1, 0),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm2d(128))
+        self.block8 = nn.Sequential(
+        nn.Conv2d(128, 256, 4, 1, 0),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm2d(256))
+        self.block9 = nn.Sequential(
+        nn.Conv2d(256, 256, 4, 1, 0),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm2d(256))
+        self.block10 = nn.Sequential(
+        nn.Conv2d(256, 512, 4, 1, 0),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm2d(512))
+        self.block11 = nn.Sequential(
+        nn.Conv2d(512, 512, 4, 1, 0),
+        nn.PReLU())
+
+        self.init_weights()
+
+    def init_weights(self):
+        """
+        Initialize weights for convolution layers using Xavier initialization.
+        """
+        for m in self.modules():
+            if isinstance(m, nn.Conv1d):
+                nn.init.xavier_normal(m.weight.data)
+
+    def forward(self, x):
+        batchsize = x.size()[0]
+        out1 = self.block1(x)
+        out2 = self.block2(out1)
+        out3 = self.block3(out2)
+        out4 = self.block4(out3)
+        out5 = self.block5(out4)
+        out6 = self.block6(out5)
+        out7 = self.block7(out6)
+        out8 = self.block8(out7)
+        out9 = self.block9(out8)
+        out10 = self.block10(out9)
+        out11 = self.block11(out10)
+        output = torch.cat((x.view(batchsize,-1),out1.view(batchsize,-1),
+                                out2.view(batchsize,-1),out3.view(batchsize,-1),
+                                out4.view(batchsize,-1),out5.view(batchsize,-1),
+                                out6.view(batchsize,-1), out7.view(batchsize,-1),
+                                out8.view(batchsize,-1),out9.view(batchsize,-1),
+                                out10.view(batchsize,-1),out11.view(batchsize,-1) ),1)
+        return output
 
 
 if __name__=="__main__":
@@ -115,5 +193,7 @@ if __name__=="__main__":
     feat, energy = fbank(sig, samplerate=rate, nfilt=38, winfunc=np.hamming)
     feat = np.log(feat)
     gen = G()
+    dis = D()
     out = gen(torch.tensor(feat, dtype = torch.float32).view(1,1,feat.shape[0],feat.shape[1]))
-    #pdb.set_trace()
+
+    pdb.set_trace()
