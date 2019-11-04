@@ -56,9 +56,9 @@ class LSTM(generic_model):
             exit(0)
 
         # Load mapping
-        """
+
         try:
-            fname = config['dir']['dataset'] + 'lstm_mapping.json'
+            fname = './lstm_mapping.json'
             with open(fname, 'r') as f:
                 self.phone_to_id = json.load(f)
 
@@ -69,7 +69,7 @@ class LSTM(generic_model):
         except:
             print("Can't find phone mapping")
             exit(0)
-        """
+
     def init_hidden(self):
 
         hidden = next(self.parameters()).data.new(self.num_layers, self.batch_size, self.hidden_dim)

@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import os
 import json
+import pdb
 
 
 class generic_model(nn.Module):
@@ -52,8 +53,9 @@ class generic_model(nn.Module):
 
             try:
                 if epoch is None:
-                    filename = self.config_file['dir']['models'] + 'best_' + '_'.join(
+                    filename = './lstm_model/' + 'best' + '_' + '_'.join(
                         [rnn_name, str(layers), str(hidden_dim)]) + '.pth'
+                    #pdb.set_trace()
                 else:
                     filename = self.config_file['dir']['models'] + str(epoch) + '_'.join(
                         [rnn_name, str(layers), str(hidden_dim)]) + '.pth'

@@ -3,6 +3,7 @@ import numpy as np
 import os
 import torch
 import scipy.io.wavfile as wavfile
+from operator import add
 from python_speech_features import logfbank, fbank
 from read_yaml import read_yaml
 import pdb
@@ -188,7 +189,7 @@ class D(nn.Module):
                                 out6.view(batchsize,-1), out7.view(batchsize,-1),
                                 out8.view(batchsize,-1),out9.view(batchsize,-1),
                                 out10.view(batchsize,-1),out11.view(batchsize,-1) ),1)
-        return output
+        return out11.view(batchsize, -1)#output
 
 class dl_model():
 
@@ -264,6 +265,37 @@ class dl_model():
                             'pau': ['pcl', 'tcl', 'kcl', 'bcl', 'dcl', 'gcl', 'h#', 'epi', 'q'],
                             'uw': ['ux']}
 
+def generate_lattice(outputs, h_spike):
+    tsteps, num_phones = outputs.shape
+    lattice = [[] for i in range(tsteps)]
+    for i in range(tsteps):
+        for j in range(num_phones):
+            if outputs[i][j] >= h_spike:
+                lattice[i].append((j, outputs[i][j]))
+
+    # Collapse consecutive
+    final_lattice = []
+
+    previous_phones = [x[0] for x in lattice[0]]
+    prev_sum = [x[1] for x in lattice[0]]
+    num = 1
+
+    for l in lattice[1:]:
+        ids, vals = [x[0] for x in l], [x[1] for x in l]
+
+        if ids == previous_phones:
+            num += 1
+            prev_sum = list(map(add, prev_sum, vals))
+        else:
+            final_lattice.append(list(zip(previous_phones, [x / num for x in prev_sum])))
+            previous_phones = ids
+            prev_sum = vals
+            num = 1
+
+    final_lattice.append(list(zip(previous_phones, [x / num for x in prev_sum])))
+
+    return final_lattice
+
 
 if __name__=="__main__":
     rate, sig = wavfile.read('./SA1.WAV.wav')
@@ -273,8 +305,8 @@ if __name__=="__main__":
     feat_log_full = np.reshape(np.log(feat), (1, tsteps, hidden_dim))
     lens = np.array([tsteps])
     inputs, lens = torch.from_numpy(np.array(feat_log_full)).float(), torch.from_numpy(np.array(lens)).long()
-    dl_model = dl_model("")
-    #id_to_phone = {v[0]: k for k, v in dl_model.model.phone_to_id.items()}
+    dl_model = dl_model("test_one")
+    id_to_phone = {v[0]: k for k, v in dl_model.model.phone_to_id.items()}
 
     dl_model.model.eval()
     with torch.no_grad():
@@ -288,7 +320,12 @@ if __name__=="__main__":
         outputs = outputs[0, :, :-1]
         softmax = np.exp(outputs) / np.sum(np.exp(outputs), axis=1)[:, None]
 
-    #softmax, id_to_phone
+    outputs, mapping = softmax, id_to_phone
+    final_lattice = generate_lattice(outputs, 0.2)
+    print(final_lattice, ([len(x) for x in final_lattice if len(x) != 1]))
+
+    phones = [[mapping[x[0]] for x in l] for l in final_lattice]
+    print(phones)
     pdb.set_trace()
 
     """

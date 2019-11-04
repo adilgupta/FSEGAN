@@ -66,7 +66,7 @@ class timit_data():
 			for speaker_id in sorted(listdir(os.path.join(base_pth, dialect))):
 
 				data = sorted(os.listdir(os.path.join(base_pth, dialect, speaker_id)))
-				wav_files = [x for x in data if x.split('.')[-1] == 'wav'] #all the .wav files
+				wav_files = [x for x in data if x[-4:] == ".wav"] #all the .wav files
 
 				for wav_file in wav_files:
 
@@ -78,7 +78,7 @@ class timit_data():
 					# sig ranges from -32768 to +32768 AND NOT -1 to +1
 					feat, energy = fbank(sig, samplerate=rate, nfilt=self.config['feat_dim'], winfunc=np.hamming)
 					feat_log_full = np.log(feat) #calculate log mel filterbank energies for complete file
-					phenome_path = wav_path[:-3]+'PHN' #file which contains the phenome location data
+					phenome_path = wav_path[:-7]+'PHN' #file which contains the phenome location data
 					#phones in current wav file
 					cur_phones = []
 
