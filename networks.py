@@ -189,7 +189,7 @@ class D(nn.Module):
                                 out6.view(batchsize,-1), out7.view(batchsize,-1),
                                 out8.view(batchsize,-1),out9.view(batchsize,-1),
                                 out10.view(batchsize,-1),out11.view(batchsize,-1) ),1)
-        return out11.view(batchsize, -1)#output
+        return output # out11.view(batchsize, -1)#output
 
 class dl_model():
 

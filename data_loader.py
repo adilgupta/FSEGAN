@@ -18,15 +18,16 @@ class Dataset(torch.utils.data.Dataset):
     def __init__(self):
         self.filenames = glob.glob('/media/Sharedata/adil/timit/noisy_files/*.wav')
     def __getitem__(self, idx):
+        sig_len = 1
         rate, noisy_file = wavfile.read(self.filenames[idx])
         rate, clean_file = wavfile.read('/media/Sharedata/adil/timit/clean_files/' + get_name(self.filenames[idx].split('/')[-1].split('_')[:-2])+'.wav')
-        if(len(clean_file) > 1*rate):
-            start = np.random.randint(len(clean_file) - 1*rate)
-            clean_file = clean_file[start:start+1*rate]
-            noisy_file = noisy_file[start:start+1*rate]
+        if(len(clean_file) > sig_len*rate):
+            start = np.random.randint(len(clean_file) - sig_len*rate)
+            clean_file = clean_file[start:start+sig_len*rate]
+            noisy_file = noisy_file[start:start+sig_len*rate]
         else:
-            clean_file = np.concatenate((clean_file, np.zeros(1*rate-len(clean_file))), axis = 0)
-            noisy_file = np.concatenate((noisy_file, np.zeros(1*rate-len(noisy_file))), axis = 0)
+            clean_file = np.concatenate((clean_file, np.zeros(sig_len*rate-len(clean_file))), axis = 0)
+            noisy_file = np.concatenate((noisy_file, np.zeros(sig_len*rate-len(noisy_file))), axis = 0)
         feat_n, energy = fbank(noisy_file, samplerate=rate, nfilt=38, winfunc=np.hamming)
         feat_c, energy = fbank(clean_file, samplerate=rate, nfilt=38, winfunc=np.hamming)
         noisy_sfm = np.log(feat_n)
