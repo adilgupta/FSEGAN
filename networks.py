@@ -60,7 +60,7 @@ class G(nn.Module):
         self.dec2 = nn.ConvTranspose2d(64, 16, 4, 1, 0)
         self.dec2_nl = nn.PReLU()
         self.dec1 = nn.ConvTranspose2d(in_channels = 32, out_channels = 1, kernel_size = 4, stride = 1, padding = 0)
-        self.dec_tanh = nn.Tanh()
+        #self.dec_tanh = nn.Linear()
 
         self.init_weights()
 
@@ -107,9 +107,9 @@ class G(nn.Module):
         d2 = self.dec2(d3_c)
         d2_c = self.dec2_nl(torch.cat((d2, e1), dim = 1))
         d1 = self.dec1(d2_c)
-        out = self.dec_tanh(d1)
+        #out = self.dec_tanh(d1)
 
-        return out
+        return d1#out
 
 class D(nn.Module):
     """D"""
